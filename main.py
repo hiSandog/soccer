@@ -45,7 +45,10 @@ if __name__ == "__main__":
         3. 分别计算参赛球星的总的进攻能力值和防守能力值，每队的理想能力值为总能力值的一半
         4. 获得本次分组的所有排列组合情况，并且打乱排列组合情况，这样做的原因是使得每一次执行，结果都不一样
         5. 先设定一个允许能力差值，该值从0开始，将所有排列组合情况进行判断,
-           当队伍的进攻能力值和防守能力值都满足：理想能力值-允许能力差值 <= 当前队伍能力值 <= 理想能力值+允许能力差值，
+           当队伍的进攻能力值和防守能力值满足：
+               理想进攻能力值 = 队伍进攻能力值 且 理想防守能力值 = 队伍防守能力值 (势均力敌)
+           或  理想进攻能力值 - 允许能力差值 = 队伍进攻能力值 且 理想防守能力值 + 允许能力差值 = 队伍防守能力值 (攻弱守强)
+           或  理想进攻能力值 + 允许能力差值 = 队伍进攻能力值 且 理想防守能力值 - 允许能力差值 = 队伍防守能力值 (攻强守弱)
            该队伍编为一队，余下的人编为二队，分组完成，直接返回
         6. 当所有排列组合情况均不满足步骤4中条件，允许能力差值+1，重复步骤4，直到满足步骤4条件为止
     """
@@ -73,26 +76,33 @@ if __name__ == "__main__":
         for sub_team in sub_arrays:
             # 获取当前队伍的进攻能力和防守能力
             curr_attack_ability, curr_defense_ability = get_team_ability(sub_team)
-            # 判断当前队伍的能力是不是在可以接受的能力差值之内，如果是，剩下的人自动组成二队，分组成功，直接返回
+            group_success = False
+            # 队伍能力总和与理想能力值相同，但进攻稍弱，防守稍强
             if (
-                avg_attack_ability - capacity
-                <= curr_attack_ability
-                <= avg_attack_ability + capacity
-                and avg_defense_ability - capacity
-                <= curr_defense_ability
-                <= avg_defense_ability + capacity
+                avg_attack_ability - capacity == curr_attack_ability
+                and avg_defense_ability + capacity == curr_defense_ability
             ):
+                label = "攻弱守强"
+                group_success = True
+            # 队伍能力总和与理想能力值相同，但进攻稍强，防守稍弱
+            elif (
+                avg_attack_ability + capacity == curr_attack_ability
+                and avg_defense_ability - capacity == curr_defense_ability
+            ):
+                label = "攻强守弱"
+                group_success = True
+            if group_success:
                 if capacity == 0:
                     print("分组状态：势均力敌")
-                elif capacity == 1:
-                    print("分组状态：些许不平衡")
                 else:
-                    print("分组状态：不太平衡")
+                    print(f"分组状态：一队{label}")
                 print(f"一队：{', '.join(map(str, sub_team))}")
                 team2 = [player for player in players if player not in sub_team]
                 print(f"二队：{', '.join(map(str, team2))}")
                 sys.exit(0)
         if capacity > allowable_capacity:
-            print("当前参赛球星无法调配至一个合理的分组，若想继续，请调大最大可允许差值(allowable_capacity)")
+            print(
+                "当前参赛球星无法调配至一个合理的分组，若想继续，请调大最大可允许差值(allowable_capacity)"
+            )
             sys.exit(1)
         capacity += 1
