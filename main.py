@@ -9,18 +9,25 @@ players = [
     for player in all_players
     if player.name
     in (
-        "陈家名",
-        # "倪恺隆",
+        # "赵泽文",
+        # "孙以祁",
+        "陈晓俊",
+        "叶宇轩",
+        # "吴乾泰",
+        # "周业",
         "杨帅",
-        "吕哥",
-        "煦坤",
-        "宇轩",
-        "晓俊",
-        "霄哥",
-        "乾泰",
-        "业总",
-        "修然",
-        "子龙",
+        # "丁庚壬",
+        "吕常春",
+        # "王海兵",
+        "黄子龙",
+        # "夏煦坤",
+        "张意霄",
+        "武修然",
+        # "王林霄",
+        # "何儒盛",
+        "陈家名",
+        "倪恺隆",
+        "汤文",
     )
 ]
 
@@ -49,16 +56,11 @@ if __name__ == "__main__":
            该队伍编为一队，余下的人编为二队，分组完成，直接返回
         6. 当所有排列组合情况均不满足步骤4中条件，允许能力差值+1，重复步骤4，直到满足步骤4条件为止
     """
-    # 如果人数为奇数，则添加一个虚拟球星凑偶数
-    if len(players) % 2 == 1:
-        players.append(virtual_player)
+    # # 如果人数为奇数，则添加一个虚拟球星凑偶数
+    # if len(players) % 2 == 1:
+    #     players.append(virtual_player)
     # 打乱参赛球星
     random.shuffle(players)
-    # 获取参赛球星总进攻能力和防御能力
-    sum_attack_ability, sum_defense_ability = get_team_ability(players)
-    # 计算每队该有的进攻能力和防御能力，即总的进攻能力和防守能力的一半
-    avg_attack_ability = int(sum_attack_ability / 2)
-    avg_defense_ability = int(sum_defense_ability / 2)
     # 每队的人数
     team_size = int(len(players) / 2)
     # 获得当前每队人数的所有可能分组集合
@@ -69,39 +71,40 @@ if __name__ == "__main__":
     capacity = 0
     while True:
         for sub_team in sub_arrays:
-            # 获取当前队伍的进攻能力和防守能力
-            curr_attack_ability, curr_defense_ability = get_team_ability(sub_team)
+            team1 = [player for player in players if player in sub_team]
+            team1_attack_ability, team1_defense_ability = get_team_ability(team1)
+            team2 = [player for player in players if player not in sub_team]
+            team2_attack_ability, team2_defense_ability = get_team_ability(team2)
             group_success = False
+            gap = 5
             if (
-                avg_attack_ability - capacity == curr_attack_ability
-                and avg_defense_ability + capacity == curr_defense_ability
+                team1_attack_ability - capacity == team2_attack_ability
+                and team1_defense_ability + capacity == team2_defense_ability
             ):
                 group_success = True
             elif (
-                avg_attack_ability + capacity == curr_attack_ability
-                and avg_defense_ability - capacity == curr_defense_ability
+                team1_attack_ability + capacity == team2_attack_ability
+                and team1_defense_ability - capacity == team2_defense_ability
             ):
                 group_success = True
             elif (
-                capacity >= 2
-                and avg_attack_ability - capacity + 1
-                <= curr_attack_ability
-                <= avg_attack_ability + capacity - 1
-                and avg_defense_ability - capacity + 1
-                <= curr_defense_ability
-                <= avg_defense_ability + capacity - 1
+                capacity > gap
+                and team1_attack_ability - capacity + gap
+                <= team2_attack_ability
+                <= team1_attack_ability + capacity - gap
+                and team1_defense_ability - capacity + gap
+                <= team2_defense_ability
+                <= team1_defense_ability + capacity - gap
             ):
                 group_success = True
             if group_success:
-                team1 = [player for player in players if player in sub_team]
-                team1_attack_ability, team1_defense_ability = get_team_ability(team1)
                 print(
                     f"一队：{', '.join(map(str, team1))}。 进攻能力:{team1_attack_ability}, 防守能力:{team1_defense_ability}"
                 )
-                team2 = [player for player in players if player not in sub_team]
-                team2_attack_ability, team2_defense_ability = get_team_ability(team2)
                 print(
                     f"二队：{', '.join(map(str, team2))}。 进攻能力:{team2_attack_ability}, 防守能力:{team2_defense_ability}"
                 )
                 sys.exit(0)
+        if capacity > 2:
+            sys.exit(0)
         capacity += 1
